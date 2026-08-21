@@ -1,0 +1,11 @@
+# Replace the default fresh-only delegation consumer with one task-directed
+# compacting consumer while retaining the shared spawn/continuation runtime.
+- id: tool-subagent
+  disabled: true
+
+- insert:
+    - id: tool-compact-fork
+      name: dsh-compact-fork
+      config:
+        provider: spawn
+        toolName: subagent

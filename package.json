@@ -1,0 +1,42 @@
+{
+  "name": "dsh-compact-fork",
+  "version": "0.1.0",
+  "description": "Task-directed context compaction before starting a resumable DeepSeek Harness subagent.",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "cordis",
+    "subagent",
+    "compaction"
+  ],
+  "license": "MIT",
+  "author": "JachinShen",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "core.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.7"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

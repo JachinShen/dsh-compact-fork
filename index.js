@@ -64,6 +64,25 @@ async function directionalSummary(ctx, agent, direction, maxTokens, signal) {
 }
 
 function toolDefinition(ctx, config, supportsAgentPreset) {
+  const parameters = {
+    description: {
+      type: 'string',
+      required: true,
+      description: 'A short 3–5 word label for the child and its task.',
+    },
+    prompt: {
+      type: 'string',
+      required: true,
+      description: 'The child task. This same text directs which parent context the compaction preserves.',
+    },
+  }
+  if (supportsAgentPreset) {
+    parameters.profile = {
+      type: 'string',
+      description: 'Optional agent preset id for the child. Omit it to inherit the parent profile.',
+    }
+  }
+
   return defineTool({
     name: config.toolName,
     description:
@@ -71,22 +90,7 @@ function toolDefinition(ctx, config, supportsAgentPreset) {
       + 'The parent keeps its full context. Use this when a subtask needs relevant conversation context without '
       + 'inheriting unrelated history. The child runs in the background; its ordinary response resumes the parent, '
       + 'and send_message can continue the same child later.',
-    parameters: {
-      description: {
-        type: 'string',
-        required: true,
-        description: 'A short 3–5 word label for the child and its task.',
-      },
-      prompt: {
-        type: 'string',
-        required: true,
-        description: 'The child task. This same text directs which parent context the compaction preserves.',
-      },
-      profile: {
-        type: 'string',
-        description: 'Optional agent preset id for the child. Omit it to inherit the parent profile.',
-      },
-    },
+    parameters,
     output: {
       schema: {
         type: 'object',
@@ -105,10 +109,7 @@ function toolDefinition(ctx, config, supportsAgentPreset) {
         parent,
         maxDepth: config.maxDepth,
       }
-      if (args.profile !== undefined) {
-        if (!supportsAgentPreset) {
-          throw new Error(`compact_fork provider "${config.provider}" does not support agent profile selection`)
-        }
+      if (supportsAgentPreset && args.profile !== undefined) {
         request.agentPreset = args.profile
       }
       const started = await ctx.subagents.startContinuable({

@@ -1,4 +1,3 @@
-import { defineTool } from '@deepseek-ai/dsh-tools'
 import {
   childPrompt,
   compactionInstruction,
@@ -64,38 +63,42 @@ async function directionalSummary(ctx, agent, direction, maxTokens, signal) {
 }
 
 function toolDefinition(ctx, config, supportsAgentPreset) {
-  const parameters = {
+  const properties = {
     description: {
       type: 'string',
-      required: true,
       description: 'A short 3–5 word label for the child and its task.',
     },
     prompt: {
       type: 'string',
-      required: true,
       description: 'The child task. This same text directs which parent context the compaction preserves.',
     },
   }
   if (supportsAgentPreset) {
-    parameters.profile = {
+    properties.profile = {
       type: 'string',
       description: 'Optional agent preset id for the child. Omit it to inherit the parent profile.',
     }
   }
 
-  return defineTool({
+  return {
     name: config.toolName,
     description:
       'Fork a resumable child from a task-directed compacted projection of this agent’s completed conversation. '
       + 'The parent keeps its full context. Use this when a subtask needs relevant conversation context without '
       + 'inheriting unrelated history. The child runs in the background; its ordinary response resumes the parent, '
       + 'and send_message can continue the same child later.',
-    parameters,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties,
+      required: ['description', 'prompt'],
+    },
     output: {
       schema: {
         type: 'object',
         additionalProperties: false,
-        properties: { subagentId: { type: 'string', required: true } },
+        properties: { subagentId: { type: 'string' } },
+        required: ['subagentId'],
       },
       render: (_args, value) => [{ type: 'text', text: `started compact-fork subagent ${value.subagentId}` }],
     },
@@ -120,7 +123,7 @@ function toolDefinition(ctx, config, supportsAgentPreset) {
       })
       return { subagentId: started.childId }
     },
-  })
+  }
 }
 
 /** Register `compact_fork` while the configured fresh-child provider exists. */
